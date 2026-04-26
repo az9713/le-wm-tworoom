@@ -7,6 +7,35 @@
 > - **Comprehensive onboarding documentation** — a step-by-step reproduction guide covering environment setup, dependency quirks, training, and evaluation (see [`results/REPORT.md`](results/REPORT.md))
 > - **TwoRoom experiment results** — trained checkpoint, training metrics, loss curves, and 50 rollout videos from a complete end-to-end run on a single RTX 4090 (see [TwoRoom Results](#tworoom-results) below)
 
+### Training loss dashboard
+
+![Training loss dashboard](https://raw.githubusercontent.com/az9713/le-wm-tworoom/main/results/loss_dashboard.png)
+
+The 2×2 panel shows all loss components over the full 8-epoch run (41,103 steps). Dashed vertical lines mark epoch boundaries.
+
+- **Top-left — total loss** (`pred_loss + 0.09 × sigreg_loss`): drops 14× in epoch 0, then descends smoothly to ~0.17. Red dots are per-epoch validation loss; they track the training curve closely after a transient spike at epoch 1.
+- **Top-right — prediction loss** (`pred_loss`): the predictor's MSE on the next latent embedding. Monotone descent from 0.45 → 0.008 with no collapse signature (a collapsing encoder would drive this to ~0 immediately while `sigreg` stayed high).
+- **Bottom-left — SIGReg loss (linear)**: Gaussianity regularizer on the encoder output. Dominant early (31.9 at step 0), falls rapidly. The linear axis compresses all post-epoch-1 structure — use the log panel.
+- **Bottom-right — SIGReg loss (log)**: same data on a log y-axis. The epoch-1 validation spike to 71.3 is clearly visible; by epoch 2 the held-out curve rejoins the training trace and both descend together. This single-bump-then-stabilize pattern is the regime change LeWM is specifically designed to survive without collapse.
+
+### Sample rollout videos
+
+Each video is a 3.3-second, 15-fps clip showing a 2×2 grid: **top-left** = agent under LeWM+CEM control, **top-right** = goal image, **bottom-left** = expert demo from the same start, **bottom-right** = goal image repeated.
+
+**Episode 0 — clean one-room-to-one-room crossing**
+
+https://github.com/user-attachments/assets/a3af7a1b-6596-48bf-a08c-e1fec538c630
+
+The agent (red dot, top-left) starts in the left room and needs to reach a goal position in the right room. It navigates directly through the doorway within the first ~20 steps, matching the expert trajectory (bottom-left) closely. CEM in the 192-dim latent correctly plans a straight-line path when the doorway is well-aligned with the start/goal axis.
+
+**Episode 10 — crossing with an off-axis approach**
+
+https://github.com/user-attachments/assets/df677f61-a7ff-4e3c-adba-ba26438fdb4d
+
+The start and goal positions are not colinear with the doorway, requiring the agent to first reposition laterally before committing to the cross-room transition. The world model plans the two-phase manoeuvre (approach angle correction → doorway traversal) within the 5-step receding horizon. Compare with the expert (bottom-left): the CEM path is not identical but reaches the same goal within the 50-step budget.
+
+---
+
 [Lucas Maes*](https://x.com/lucasmaes_), [Quentin Le Lidec*](https://quentinll.github.io/), [Damien Scieur](https://scholar.google.com/citations?user=hNscQzgAAAAJ&hl=fr), [Yann LeCun](https://yann.lecun.com/) and [Randall Balestriero](https://randallbalestriero.github.io/)
 
 **Abstract:** Joint Embedding Predictive Architectures (JEPAs) offer a compelling framework for learning world models in compact latent spaces, yet existing methods remain fragile, relying on complex multi-term losses, exponential moving averages, pretrained encoders, or auxiliary supervision to avoid representation collapse. In this work, we introduce LeWorldModel (LeWM), the first JEPA that trains stably end-to-end from raw pixels using only two loss terms: a next-embedding prediction loss and a regularizer enforcing Gaussian-distributed latent embeddings. This reduces tunable loss hyperparameters from six to one compared to the only existing end-to-end alternative. With ~15M parameters trainable on a single GPU in a few hours, LeWM plans up to 48× faster than foundation-model-based world models while remaining competitive across diverse 2D and 3D control tasks. Beyond control, we show that LeWM's latent space encodes meaningful physical structure through probing of physical quantities. Surprise evaluation confirms that the model reliably detects physically implausible events.
@@ -139,33 +168,6 @@ A complete end-to-end reproduction of the TwoRoom experiment was run on a single
 | **This fork** | **RTX 4090 24 GB** | **8** | **94 %** | **~2 h 45 min** |
 
 **47 of 50 episodes succeeded** (seed 42, `CEMSolver`, horizon=5, 50-step budget per episode).
-
-### Training loss dashboard
-
-![Training loss dashboard](https://raw.githubusercontent.com/az9713/le-wm-tworoom/main/results/loss_dashboard.png)
-
-The 2×2 panel shows all loss components over the full 8-epoch run (41,103 steps). Dashed vertical lines mark epoch boundaries.
-
-- **Top-left — total loss** (`pred_loss + 0.09 × sigreg_loss`): drops 14× in epoch 0, then descends smoothly to ~0.17. Red dots are per-epoch validation loss; they track the training curve closely after a transient spike at epoch 1.
-- **Top-right — prediction loss** (`pred_loss`): the predictor's MSE on the next latent embedding. Monotone descent from 0.45 → 0.008 with no collapse signature (a collapsing encoder would drive this to ~0 immediately while `sigreg` stayed high).
-- **Bottom-left — SIGReg loss (linear)**: Gaussianity regularizer on the encoder output. Dominant early (31.9 at step 0), falls rapidly. The linear axis compresses all post-epoch-1 structure — use the log panel.
-- **Bottom-right — SIGReg loss (log)**: same data on a log y-axis. The epoch-1 validation spike to 71.3 is clearly visible; by epoch 2 the held-out curve rejoins the training trace and both descend together. This single-bump-then-stabilize pattern is the regime change LeWM is specifically designed to survive without collapse.
-
-### Sample rollout videos
-
-Each video is a 3.3-second, 15-fps clip showing a 2×2 grid: **top-left** = agent under LeWM+CEM control, **top-right** = goal image, **bottom-left** = expert demo from the same start, **bottom-right** = goal image repeated.
-
-**Episode 0 — clean one-room-to-one-room crossing**
-
-https://user-images.githubusercontent.com/PLACEHOLDER/rollout_0.mp4
-
-The agent (red dot, top-left) starts in the left room and needs to reach a goal position in the right room. It navigates directly through the doorway within the first ~20 steps, matching the expert trajectory (bottom-left) closely. CEM in the 192-dim latent correctly plans a straight-line path when the doorway is well-aligned with the start/goal axis.
-
-**Episode 10 — crossing with an off-axis approach**
-
-https://user-images.githubusercontent.com/PLACEHOLDER/rollout_10.mp4
-
-The start and goal positions are not colinear with the doorway, requiring the agent to first reposition laterally before committing to the cross-room transition. The world model plans the two-phase manoeuvre (approach angle correction → doorway traversal) within the 5-step receding horizon. Compare with the expert (bottom-left): the CEM path is not identical but reaches the same goal within the 50-step budget.
 
 ### Results artifacts (`results/`)
 
