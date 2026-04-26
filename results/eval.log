@@ -1,0 +1,56 @@
+04:26:30.444 | INFO    (11582, stable_worldmodel.world) | 🌍🌍🌍 World swm/TwoRoom-v1 initialized 🌍🌍🌍
+04:26:30.444 | INFO    (11582, stable_worldmodel.world) | 🕹️ 🕹️ 🕹️ Action space 🕹️ 🕹️ 🕹️
+04:26:30.445 | INFO    (11582, stable_worldmodel.world) | Box(-1.0, 1.0, (50, 2), float32)
+04:26:30.445 | INFO    (11582, stable_worldmodel.world) | 👁️ 👁️ 👁️ Observation space 👁️ 👁️ 👁️
+04:26:30.445 | INFO    (11582, stable_worldmodel.world) | Box(0.0, 224.0, (50, 10), float32)
+04:26:30.445 | INFO    (11582, stable_worldmodel.world) | ⚗️ ⚗️ ⚗️ Variation space ⚗️ ⚗️ ⚗️
+agent:
+    color: Box(0, 255, (3,), uint8)
+    position: Box(14.0, 209.0, (2,), float32)
+    radius: Box(7.0, 14.0, (1,), float32)
+    speed: Box(1.75, 10.5, (1,), float32)
+background:
+    color: Box(0, 255, (3,), uint8)
+door:
+    color: Box(0, 255, (3,), uint8)
+    number: Discrete(3, start=1)
+    position: MultiDiscrete([224 224 224])
+    size: MultiDiscrete([21 21 21], start=[1 1 1])
+rendering:
+    render_target: Discrete(2)
+target:
+    color: Box(0, 255, (3,), uint8)
+    position: Box(14.0, 209.0, (2,), float32)
+    radius: Box(7.0, 14.0, (1,), float32)
+task:
+    min_steps: Discrete(100, start=15)
+wall:
+    axis: Discrete(2)
+    border_color: Box(0, 255, (3,), uint8)
+    color: Box(0, 255, (3,), uint8)
+    thickness: Discrete(35, start=7)
+[2026-04-26 04:26:30,487][root][INFO] - Cached 'action' from '/dev/shm/.stable_worldmodel/tworoom.h5'
+[2026-04-26 04:26:30,496][root][INFO] - Cached 'proprio' from '/dev/shm/.stable_worldmodel/tworoom.h5'
+670809 valid starting points found for evaluation.
+[ 58908  62735  79449  82490  85128  86996 118110 152360 168250 185614
+ 209429 254974 326766 341698 370733 398925 404332 408561 410644 414983
+ 415063 460975 472784 484945 502341 510811 581719 593044 602861 624527
+ 642470 645436 660989 677771 698450 701226 712913 717070 719912 724096
+ 757921 762396 773558 790687 790941 817965 822836 853582 893923 898343]
+/workspace/projects/jepa_onchain/.venv/lib/python3.10/site-packages/gymnasium/utils/passive_env_checker.py:129: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting a numpy array, actual type: <class 'torch.Tensor'>[0m
+  logger.warn(
+/workspace/projects/jepa_onchain/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:415: UserWarning: [33mWARN: Casting input x to numpy array.[0m
+  gym.logger.warn("Casting input x to numpy array.")
+CEM solve time: 270.5476 seconds
+/workspace/projects/jepa_onchain/.venv/lib/python3.10/site-packages/gymnasium/utils/passive_env_checker.py:129: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting a numpy array, actual type: <class 'torch.Tensor'>[0m
+  logger.warn(
+/workspace/projects/jepa_onchain/.venv/lib/python3.10/site-packages/gymnasium/spaces/box.py:415: UserWarning: [33mWARN: Casting input x to numpy array.[0m
+  gym.logger.warn("Casting input x to numpy array.")
+CEM solve time: 263.6529 seconds
+Video saved to /dev/shm/.stable_worldmodel
+{'success_rate': 94.0, 'episode_successes': array([ True,  True,  True, False,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True, False,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True, False,  True,  True,  True,  True,
+        True,  True,  True,  True,  True,  True,  True,  True,  True,
+        True,  True,  True,  True,  True]), 'seeds': None}

@@ -140,6 +140,33 @@ A complete end-to-end reproduction of the TwoRoom experiment was run on a single
 
 **47 of 50 episodes succeeded** (seed 42, `CEMSolver`, horizon=5, 50-step budget per episode).
 
+### Training loss dashboard
+
+![Training loss dashboard](https://raw.githubusercontent.com/az9713/le-wm-tworoom/main/results/loss_dashboard.png)
+
+The 2×2 panel shows all loss components over the full 8-epoch run (41,103 steps). Dashed vertical lines mark epoch boundaries.
+
+- **Top-left — total loss** (`pred_loss + 0.09 × sigreg_loss`): drops 14× in epoch 0, then descends smoothly to ~0.17. Red dots are per-epoch validation loss; they track the training curve closely after a transient spike at epoch 1.
+- **Top-right — prediction loss** (`pred_loss`): the predictor's MSE on the next latent embedding. Monotone descent from 0.45 → 0.008 with no collapse signature (a collapsing encoder would drive this to ~0 immediately while `sigreg` stayed high).
+- **Bottom-left — SIGReg loss (linear)**: Gaussianity regularizer on the encoder output. Dominant early (31.9 at step 0), falls rapidly. The linear axis compresses all post-epoch-1 structure — use the log panel.
+- **Bottom-right — SIGReg loss (log)**: same data on a log y-axis. The epoch-1 validation spike to 71.3 is clearly visible; by epoch 2 the held-out curve rejoins the training trace and both descend together. This single-bump-then-stabilize pattern is the regime change LeWM is specifically designed to survive without collapse.
+
+### Sample rollout videos
+
+Each video is a 3.3-second, 15-fps clip showing a 2×2 grid: **top-left** = agent under LeWM+CEM control, **top-right** = goal image, **bottom-left** = expert demo from the same start, **bottom-right** = goal image repeated.
+
+**Episode 0 — clean one-room-to-one-room crossing**
+
+https://user-images.githubusercontent.com/PLACEHOLDER/rollout_0.mp4
+
+The agent (red dot, top-left) starts in the left room and needs to reach a goal position in the right room. It navigates directly through the doorway within the first ~20 steps, matching the expert trajectory (bottom-left) closely. CEM in the 192-dim latent correctly plans a straight-line path when the doorway is well-aligned with the start/goal axis.
+
+**Episode 10 — crossing with an off-axis approach**
+
+https://user-images.githubusercontent.com/PLACEHOLDER/rollout_10.mp4
+
+The start and goal positions are not colinear with the doorway, requiring the agent to first reposition laterally before committing to the cross-room transition. The world model plans the two-phase manoeuvre (approach angle correction → doorway traversal) within the 5-step receding horizon. Compare with the expert (bottom-left): the CEM path is not identical but reaches the same goal within the 50-step budget.
+
 ### Results artifacts (`results/`)
 
 | File | Description |
