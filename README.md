@@ -164,7 +164,7 @@ A complete end-to-end reproduction of the TwoRoom experiment was run on a single
 | Run | Hardware | Epochs | TwoRoom success rate | Wall clock |
 |:---:|:---:|:---:|:---:|:---:|
 | Paper | L40S 48 GB | — | **97 %** | "few hours" |
-| Tonbi (community) | RTX 3060 12 GB | 4 | 92 % | ~8 h |
+| [Tonbi (community)](https://www.youtube.com/watch?v=VQ15-MhZE2k) | RTX 3060 12 GB | 4 | 92 % | ~8 h |
 | **This fork** | **RTX 4090 24 GB** | **8** | **94 %** | **~2 h 45 min** |
 
 **47 of 50 episodes succeeded** (seed 42, `CEMSolver`, horizon=5, 50-step budget per episode).
@@ -199,6 +199,8 @@ cost = swm.policy.AutoCostModel(
 ## Onboarding Documentation
 
 [`results/REPORT.md`](results/REPORT.md) is a detailed reproduction guide that covers:
+
+The YouTube video [**"I Reproduced LeCun's JEPA World Model That Doesn't Predict Tokens"**](https://www.youtube.com/watch?v=VQ15-MhZE2k) by Tonbi is a helpful companion — it walks through a similar end-to-end setup on an RTX 3060 and provides useful commentary on the training dynamics.
 
 1. **Hardware and software audit** — exact versions of Python, PyTorch, CUDA, and torchvision validated for this run
 2. **Clean setup recipe** — copy-pasteable command sequence from a fresh Ubuntu 22.04 pod to a running evaluation
