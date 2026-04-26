@@ -2,6 +2,11 @@
 # LeWorldModel
 ### Stable End-to-End Joint-Embedding Predictive Architecture from Pixels
 
+> **This repository is a fork of [lucas-maes/le-wm](https://github.com/lucas-maes/le-wm).**
+> It extends the upstream code with:
+> - **Comprehensive onboarding documentation** — a step-by-step reproduction guide covering environment setup, dependency quirks, training, and evaluation (see [`results/REPORT.md`](results/REPORT.md))
+> - **TwoRoom experiment results** — trained checkpoint, training metrics, loss curves, and 50 rollout videos from a complete end-to-end run on a single RTX 4090 (see [TwoRoom Results](#tworoom-results) below)
+
 [Lucas Maes*](https://x.com/lucasmaes_), [Quentin Le Lidec*](https://quentinll.github.io/), [Damien Scieur](https://scholar.google.com/citations?user=hNscQzgAAAAJ&hl=fr), [Yann LeCun](https://yann.lecun.com/) and [Randall Balestriero](https://randallbalestriero.github.io/)
 
 **Abstract:** Joint Embedding Predictive Architectures (JEPAs) offer a compelling framework for learning world models in compact latent spaces, yet existing methods remain fragile, relying on complex multi-term losses, exponential moving averages, pretrained encoders, or auxiliary supervision to avoid representation collapse. In this work, we introduce LeWorldModel (LeWM), the first JEPA that trains stably end-to-end from raw pixels using only two loss terms: a next-embedding prediction loss and a regularizer enforcing Gaussian-distributed latent embeddings. This reduces tunable loss hyperparameters from six to one compared to the only existing end-to-end alternative. With ~15M parameters trainable on a single GPU in a few hours, LeWM plans up to 48× faster than foundation-model-based world models while remaining competitive across diverse 2D and 3D control tasks. Beyond control, we show that LeWM's latent space encodes meaningful physical structure through probing of physical quantities. Surprise evaluation confirms that the model reliably detects physically implausible events.
@@ -122,6 +127,62 @@ This function accepts:
 - `cache_dir` — optional override for the checkpoint root (defaults to `$STABLEWM_HOME`)
 
 The returned module is in `eval` mode with its PyTorch weights accessible via `.state_dict()`.
+
+## TwoRoom Results
+
+A complete end-to-end reproduction of the TwoRoom experiment was run on a single **RTX 4090 (24 GB)** using the upstream code with no model changes.
+
+| Run | Hardware | Epochs | TwoRoom success rate | Wall clock |
+|:---:|:---:|:---:|:---:|:---:|
+| Paper | L40S 48 GB | — | **97 %** | "few hours" |
+| Tonbi (community) | RTX 3060 12 GB | 4 | 92 % | ~8 h |
+| **This fork** | **RTX 4090 24 GB** | **8** | **94 %** | **~2 h 45 min** |
+
+**47 of 50 episodes succeeded** (seed 42, `CEMSolver`, horizon=5, 50-step budget per episode).
+
+### Results artifacts (`results/`)
+
+| File | Description |
+|---|---|
+| [`REPORT.md`](results/REPORT.md) | Full run report — hardware audit, setup recipe, training loss analysis, evaluation discussion, failure case breakdown, cost breakdown, lessons learned |
+| `tworoom_results.txt` | Raw eval output: `success_rate: 94.0`, per-episode boolean array, eval config |
+| `training_metrics.csv` | Lightning CSV — every 50 training steps and every epoch boundary for all loss components |
+| `training_config.yaml` | Frozen Hydra training config snapshot |
+| `train.log` / `eval.log` | Full stdout/stderr from training and evaluation |
+| `lewm_epoch_8_object.ckpt` | Trained model checkpoint (epoch 8, loadable via `stable_worldmodel`) |
+| `rollout_0.mp4` … `rollout_49.mp4` | Per-episode rollout videos (448×448, 15 fps, 2×2 grid: agent / expert / goal) |
+| `loss_dashboard.png` | 2×2 training loss panel with epoch-boundary overlays |
+| `validation_bars.png` | Per-epoch validation loss comparison |
+
+### Loading the checkpoint
+
+```python
+import stable_worldmodel as swm
+
+cost = swm.policy.AutoCostModel(
+    'lewm_epoch_8',
+    cache_dir='results'   # path to the results/ directory
+)
+```
+
+---
+
+## Onboarding Documentation
+
+[`results/REPORT.md`](results/REPORT.md) is a detailed reproduction guide that covers:
+
+1. **Hardware and software audit** — exact versions of Python, PyTorch, CUDA, and torchvision validated for this run
+2. **Clean setup recipe** — copy-pasteable command sequence from a fresh Ubuntu 22.04 pod to a running evaluation
+3. **Dependency issues and fixes** — eight issues encountered with root-cause analysis and exact resolutions, including:
+   - `stable_pretraining` torchvision v2 API incompatibility (sed patch)
+   - `gymnasium[all]` / `gym==0.21.0` setuptools breakage (workaround)
+   - RunPod hidden workspace quota with `/dev/shm` mitigation
+   - Lightning cross-device checkpoint failure (Hydra override)
+4. **Training loss analysis** — per-epoch trajectory interpretation, validation spike explanation, collapse-absence verification
+5. **Evaluation walk-through** — CEM config, per-episode outcome, failure case analysis, rollout video guide
+6. **Cost breakdown** — $0.69/hr RTX 4090, ~$3.45 total for a full 5-hour session
+
+---
 
 ## Contact & Contributions
 Feel free to open [issues](https://github.com/lucas-maes/le-wm/issues)! For questions or collaborations, please contact `lucas.maes@mila.quebec`
